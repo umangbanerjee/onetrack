@@ -113,13 +113,13 @@ export function TrendChart({ data }: TrendChartProps) {
                 stroke="var(--foreground)"
                 strokeWidth={2}
                 fill="url(#velocityGradient)"
-                dot={({ cx, cy, payload }) => {
-                  if (payload.displayCount > 0) {
+                dot={(props: any) => {
+                  if (props.payload && props.payload.displayCount > 0) {
                     return (
                       <circle
-                        key={payload.date}
-                        cx={cx}
-                        cy={cy}
+                        key={props.payload.date}
+                        cx={props.cx}
+                        cy={props.cy}
                         r={3.5}
                         fill="var(--foreground)"
                         stroke="var(--background)"
@@ -127,7 +127,7 @@ export function TrendChart({ data }: TrendChartProps) {
                       />
                     );
                   }
-                  return null;
+                  return <g key={props.payload?.date || Math.random()} />;
                 }}
                 activeDot={{
                   r: 5,

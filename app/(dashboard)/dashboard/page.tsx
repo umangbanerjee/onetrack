@@ -111,11 +111,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Streak and Weekly Target Widget */}
+      {/* Streak and Weekly Target Widget with Gamified Hunter Tier */}
       <StreakWidget
         currentStreak={summary?.currentStreakDays || 0}
         thisWeekCount={summary?.appliedThisWeek || 0}
         weeklyGoal={summary?.weeklyGoal || 5}
+        totalApplications={summary?.totalApplications || 0}
         recentActivityDates={summary?.trendData?.filter((t) => t.count > 0).map((t) => t.date) || []}
       />
 
