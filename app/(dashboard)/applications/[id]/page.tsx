@@ -26,6 +26,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowLeft, ExternalLink, Trash2, Save, Check, RefreshCw, Send, BookOpen, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate, formatRelativeDate } from "@/lib/utils";
+import { format } from "date-fns";
 import Link from "next/link";
 
 export default function ApplicationDetailPage() {
@@ -355,7 +356,20 @@ export default function ApplicationDetailPage() {
 
                   <div className="space-y-1">
                     <Label htmlFor="date_applied" className="text-[11px] font-bold">Date Applied</Label>
-                    <Input id="date_applied" type="date" {...register("date_applied")} className="h-8 text-xs font-mono" />
+                    <Input
+                      id="date_applied"
+                      type="date"
+                      max={format(new Date(), "yyyy-MM-dd")}
+                      {...register("date_applied")}
+                      className={`h-8 text-xs font-mono transition-all ${
+                        errors.date_applied ? "border-destructive focus-visible:ring-destructive" : ""
+                      }`}
+                    />
+                    {errors.date_applied && (
+                      <p className="text-[10px] text-destructive font-bold animate-in fade-in">
+                        ↳ {errors.date_applied.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -382,14 +396,14 @@ export default function ApplicationDetailPage() {
 
                   <div className="space-y-1">
                     <Label htmlFor="location" className="text-[11px] font-bold">Location</Label>
-                    <Input id="location" {...register("location")} placeholder="Remote, Hybrid, City" className="h-8 text-xs font-mono" />
+                    <Input id="location" {...register("location")} placeholder="e.g. Bangalore, Hyderabad, Remote" className="h-8 text-xs font-mono" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label htmlFor="salary_range" className="text-[11px] font-bold">Compensation Range</Label>
-                    <Input id="salary_range" {...register("salary_range")} placeholder="e.g. $150k - $180k" className="h-8 text-xs font-mono" />
+                    <Label htmlFor="salary_range" className="text-[11px] font-bold">Compensation / CTC</Label>
+                    <Input id="salary_range" {...register("salary_range")} placeholder="e.g. ₹24 LPA - ₹30 LPA or ₹50k/mo" className="h-8 text-xs font-mono" />
                   </div>
 
                   <div className="space-y-1">

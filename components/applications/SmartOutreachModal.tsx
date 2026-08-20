@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ApplicationItem } from "@/lib/constants/defaults";
+import { useUser } from "@clerk/nextjs";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Copy, Check, Mail, ExternalLink, Sparkles, Send } from "lucide-react";
+import { Copy, Check, Mail, ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface SmartOutreachModalProps {
@@ -27,23 +28,39 @@ export function SmartOutreachModal({
   application,
   open,
   onOpenChange,
-  userName = "Applicant",
+  userName,
 }: SmartOutreachModalProps) {
+  const { user } = useUser();
+  const fallbackName =
+    user?.fullName ||
+    user?.firstName ||
+    (user?.emailAddresses?.[0]?.emailAddress?.split("@")[0]) ||
+    userName ||
+    "Applicant";
+
+  const [candidateName, setCandidateName] = useState(fallbackName);
   const [recipientName, setRecipientName] = useState("");
   const [recipientRole, setRecipientRole] = useState("Hiring Manager");
   const [keySkill, setKeySkill] = useState("building high-performance full-stack systems");
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (user?.fullName || user?.firstName) {
+      setCandidateName(user.fullName || user.firstName || "Applicant");
+    }
+  }, [user]);
+
   if (!application) return null;
 
   const company = application.company_name;
   const role = application.role_title;
-  const targetName = recipientName.trim() || "Hiring Team";
+  const targetRecipient = recipientName.trim() || "Hiring Team";
+  const signerName = candidateName.trim() || "Applicant";
 
   // Template 1: Cold Hiring Manager DM
   const coldInmail = {
-    subject: `Application: ${role} — ${userName}`,
-    body: `Hi ${targetName},
+    subject: `Application: ${role} — ${signerName}`,
+    body: `Hi ${targetRecipient},
 
 I noticed ${company} is currently looking for a ${role}, and I recently submitted my application through your careers portal.
 
@@ -54,13 +71,13 @@ I’d welcome the chance for a brief 10-minute chat if you're open to it. My res
 Thanks for your time and consideration!
 
 Best regards,
-${userName}`,
+${signerName}`,
   };
 
   // Template 2: Alumni / Peer Referral Ask
   const referralAsk = {
     subject: `Question regarding ${company} / ${role}`,
-    body: `Hi ${targetName},
+    body: `Hi ${targetRecipient},
 
 Hope you're having a great week!
 
@@ -71,13 +88,13 @@ If you have a quick 5 minutes, I'd love to ask one or two brief questions about 
 Either way, thank you for your time and keep up the great work!
 
 Best,
-${userName}`,
+${signerName}`,
   };
 
   // Template 3: 7-Day Follow Up
   const followUp = {
     subject: `Following up: Application for ${role} (${company})`,
-    body: `Hi ${targetName},
+    body: `Hi ${targetRecipient},
 
 I hope you're having a productive week.
 
@@ -88,13 +105,13 @@ I remain very excited about the opportunity to contribute to ${company}'s upcomi
 Looking forward to hearing from you.
 
 Best regards,
-${userName}`,
+${signerName}`,
   };
 
   // Template 4: Post-Interview Thank You Note
   const thankYou = {
     subject: `Thank you — ${role} interview (${company})`,
-    body: `Hi ${targetName},
+    body: `Hi ${targetRecipient},
 
 Thank you for taking the time to speak with me today regarding the ${role} position at ${company}.
 
@@ -103,7 +120,7 @@ I really enjoyed our discussion about the engineering challenges your team is cu
 Please let me know if you need any follow-up code samples or additional details. Looking forward to the next steps!
 
 Warm regards,
-${userName}`,
+${signerName}`,
   };
 
   const handleCopy = (text: string, tabKey: string) => {
@@ -122,37 +139,47 @@ ${userName}`,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] p-5 rounded-sm font-mono border border-border bg-card shadow-2xl">
-        <DialogHeader className="pb-2 border-b border-border">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              <span>OUTREACH & FOLLOW-UP COMMAND</span>
-            </DialogTitle>
+      <DialogContent className="max-w-2xl w-[95vw] p-5 sm:p-6 rounded-sm font-mono border border-border bg-card shadow-2xl">
+        {/* Header with safety margin from absolute close button */}
+        <DialogHeader className="pb-3 border-b border-border pr-12 space-y-1.5">
+          <DialogTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-foreground">
+            <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>OUTREACH & FOLLOW-UP COMMAND</span>
+          </DialogTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-0.5">
+            <DialogDescription className="text-[11px] text-muted-foreground">
+              Generate personalized recruiter DMs and follow-ups for <strong className="text-foreground">{company} ({role})</strong>
+            </DialogDescription>
             <a
               href={linkedInSearchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+              className="text-[10px] text-primary hover:underline inline-flex items-center gap-1 font-bold transition-colors self-start sm:self-auto"
             >
-              <span>Find {company} Recruiters on LinkedIn</span>
-              <ExternalLink className="h-3 w-3" />
+              <span>[Search {company} on LinkedIn]</span>
+              <ExternalLink className="h-2.5 w-2.5" />
             </a>
           </div>
-          <DialogDescription className="text-[11px] text-muted-foreground">
-            Generate high-converting recruiter DMs, warm referral asks, and thank-you notes for <strong className="text-foreground">{company} ({role})</strong>.
-          </DialogDescription>
         </DialogHeader>
 
-        {/* Dynamic Personalization Inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 pb-1 text-xs">
+        {/* Dynamic Personalization Inputs with Candidate Name */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-2 pb-1 text-xs">
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Your Name</Label>
+            <Input
+              value={candidateName}
+              onChange={(e) => setCandidateName(e.target.value)}
+              placeholder="e.g. Arihant"
+              className="h-8 text-xs font-mono"
+            />
+          </div>
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-muted-foreground">Contact Name</Label>
             <Input
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
               placeholder="e.g. Alex (or leave blank)"
-              className="h-7 text-xs font-mono"
+              className="h-8 text-xs font-mono"
             />
           </div>
           <div className="space-y-1">
@@ -161,16 +188,16 @@ ${userName}`,
               value={recipientRole}
               onChange={(e) => setRecipientRole(e.target.value)}
               placeholder="e.g. Tech Recruiter / EM"
-              className="h-7 text-xs font-mono"
+              className="h-8 text-xs font-mono"
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Highlight Skill / Achievement</Label>
+            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Key Skill Highlight</Label>
             <Input
               value={keySkill}
               onChange={(e) => setKeySkill(e.target.value)}
               placeholder="e.g. React & Distributed Systems"
-              className="h-7 text-xs font-mono"
+              className="h-8 text-xs font-mono"
             />
           </div>
         </div>
@@ -205,41 +232,53 @@ ${userName}`,
                   <span className="text-[10px] text-muted-foreground">{t.data.body.length} chars</span>
                 </div>
                 <div className="relative">
-                  <pre className="p-3.5 rounded-sm bg-secondary/30 border border-border text-[11px] font-mono whitespace-pre-wrap leading-relaxed text-foreground select-text max-h-[220px] overflow-y-auto">
+                  <pre className="p-3.5 rounded-sm bg-secondary/30 border border-border text-[11px] font-mono whitespace-pre-wrap leading-relaxed text-foreground select-text max-h-[200px] overflow-y-auto">
                     {t.data.body}
                   </pre>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+              {/* Action Footer with prominent Cancel / Close button */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-border mt-2">
                 <Button
-                  onClick={() => handleMailto(t.data.subject, t.data.body)}
+                  onClick={() => onOpenChange(false)}
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs font-mono gap-1.5"
+                  className="h-8 px-4 text-xs font-mono w-full sm:w-auto"
                 >
-                  <Mail className="h-3.5 w-3.5" />
-                  <span>Open in Email App</span>
+                  [Cancel & Close]
                 </Button>
 
-                <Button
-                  onClick={() => handleCopy(t.data.body, t.key)}
-                  variant="primary"
-                  size="sm"
-                  className="h-8 text-xs font-mono gap-1.5 shadow-sm"
-                >
-                  {copiedTab === t.key ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Copied to Clipboard!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span>Copy Full Template</span>
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <Button
+                    onClick={() => handleMailto(t.data.subject, t.data.body)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 text-xs font-mono gap-1.5 flex-1 sm:flex-none"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>Open in Mail</span>
+                  </Button>
+
+                  <Button
+                    onClick={() => handleCopy(t.data.body, t.key)}
+                    variant="primary"
+                    size="sm"
+                    className="h-8 px-3 text-xs font-mono gap-1.5 shadow-sm flex-1 sm:flex-none"
+                  >
+                    {copiedTab === t.key ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>Copy Template</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </TabsContent>
           ))}

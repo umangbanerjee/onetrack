@@ -35,9 +35,19 @@ const FAQS: FaqItem[] = [
       "Yes. Your application data is tied exclusively to your authenticated user account with strict Row-Level Security (RLS) isolation. Only you can view, edit, or manage your pipeline.",
   },
   {
+    question: "How does the Market Salary Benchmark feature work?",
+    answer:
+      "OneTrack includes a live AI compensation intelligence engine that benchmarks any role across Indian tech hubs (Bangalore, Hyderabad, Gurgaon, Mumbai, Pune, Remote) and global markets. It gives you 4-tier compensation bands (Entry, Market Average, Strong Offer, Top Tier), Year-over-Year (YoY) salary growth rates, and a list of top paying employers in that domain.",
+  },
+  {
+    question: "What is the STAR Interview Prep Chamber?",
+    answer:
+      "The STAR Interview Prep Chamber allows you to simulate and rehearse interview rounds tailored specifically to the target company and role. You receive real-time scoring and structured feedback across the four STAR criteria: Situation, Task, Action, and Result.",
+  },
+  {
     question: "Is OneTrack completely free to use?",
     answer:
-      "Yes, OneTrack is 100% free with unlimited applications, real-time analytics, habit tracking, and PWA installation included.",
+      "Yes, OneTrack is 100% free with unlimited applications, salary benchmarking, AI interview prep, habit tracking, and PWA installation included.",
   },
 ];
 

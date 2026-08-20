@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { applicationSchema, ApplicationFormValues } from "@/lib/validations/application";
-import { ApplicationStatus, ApplicationSource } from "@/lib/constants/defaults";
+import { ApplicationItem, ApplicationStatus, ApplicationSource } from "@/lib/constants/defaults";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, ChevronUp, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { SmartOutreachModal } from "./SmartOutreachModal";
 
 interface QuickAddModalProps {
   open: boolean;
@@ -47,6 +48,7 @@ export function QuickAddModal({
   const [addAnother, setAddAnother] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [outreachApp, setOutreachApp] = useState<ApplicationItem | null>(null);
 
   const defaultStatusId = statuses.find((s) => s.key === "applied")?.id || statuses[0]?.id || "status-1";
 
@@ -90,16 +92,16 @@ export function QuickAddModal({
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
         return;
       }
-      if (e.key.toLowerCase() === "n" && !open && !e.metaKey && !e.ctrlKey) {
+      if (e.key.toLowerCase() === "n" && !open && !outreachApp && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         onOpenChange(true);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange]);
+  }, [open, outreachApp, onOpenChange]);
 
-  const onSubmit = async (data: ApplicationFormValues) => {
+  const saveApplication = async (data: ApplicationFormValues, openOutreach = false) => {
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/applications", {
@@ -113,6 +115,7 @@ export function QuickAddModal({
         throw new Error(errorData.error || "Failed to save application");
       }
 
+      const savedApp: ApplicationItem = await res.json();
       toast.success(`[SAVED] ${data.company_name} — ${data.role_title}`);
 
       // Dispatch global update event to sync dashboard and tables immediately
@@ -120,7 +123,11 @@ export function QuickAddModal({
 
       if (onSuccess) onSuccess();
 
-      if (addAnother) {
+      if (openOutreach) {
+        onOpenChange(false);
+        setOutreachApp(savedApp);
+        reset();
+      } else if (addAnother) {
         reset({
           company_name: "",
           role_title: "",
@@ -144,228 +151,268 @@ export function QuickAddModal({
     }
   };
 
+  const onSubmit = (data: ApplicationFormValues) => {
+    return saveApplication(data, false);
+  };
+
+  const handleSaveAndOutreach = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleSubmit((data) => saveApplication(data, true))();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[95vw] sm:max-w-lg p-5 rounded-sm font-mono border border-border bg-card shadow-xl">
-        <DialogHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <span>LOG NEW APPLICATION</span>
-              <Plus className="h-3.5 w-3.5 text-primary" />
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-[11px] text-muted-foreground">
-            Fast entry for active job search pipeline.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-lg p-5 rounded-sm font-mono border border-border bg-card shadow-xl">
+          <DialogHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span>LOG NEW APPLICATION</span>
+                <Plus className="h-3.5 w-3.5 text-primary" />
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-[11px] text-muted-foreground">
+              Fast entry for active job search pipeline.
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 font-mono text-xs">
-          {/* Company & Role */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="company_name" className="text-[11px] font-bold">
-                Company Name *
-              </Label>
-              <Input
-                id="company_name"
-                {...register("company_name")}
-                placeholder="e.g. Stripe, Linear, Google"
-                autoFocus
-                className="h-8 text-xs font-mono"
-              />
-              {errors.company_name && (
-                <p className="text-[10px] text-destructive">{errors.company_name.message}</p>
-              )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 font-mono text-xs">
+            {/* Company & Role */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="company_name" className="text-[11px] font-bold">
+                  Company Name *
+                </Label>
+                <Input
+                  id="company_name"
+                  {...register("company_name")}
+                  placeholder="e.g. Flipkart, Google, Swiggy"
+                  autoFocus
+                  className="h-8 text-xs font-mono"
+                />
+                {errors.company_name && (
+                  <p className="text-[10px] text-destructive">{errors.company_name.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="role_title" className="text-[11px] font-bold">
+                  Role Title *
+                </Label>
+                <Input
+                  id="role_title"
+                  {...register("role_title")}
+                  placeholder="e.g. Software Engineer"
+                  className="h-8 text-xs font-mono"
+                />
+                {errors.role_title && (
+                  <p className="text-[10px] text-destructive">{errors.role_title.message}</p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="role_title" className="text-[11px] font-bold">
-                Role Title *
-              </Label>
-              <Input
-                id="role_title"
-                {...register("role_title")}
-                placeholder="e.g. Software Engineer"
-                className="h-8 text-xs font-mono"
-              />
-              {errors.role_title && (
-                <p className="text-[10px] text-destructive">{errors.role_title.message}</p>
-              )}
-            </div>
-          </div>
+            {/* Status & Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-bold">
+                  Pipeline Stage *
+                </Label>
+                <Select
+                  value={selectedStatusId}
+                  onValueChange={(val) => setValue("status_id", val)}
+                >
+                  <SelectTrigger className="h-8 text-xs font-mono">
+                    <SelectValue placeholder="Select stage" />
+                  </SelectTrigger>
+                  <SelectContent className="font-mono rounded-sm border border-border bg-card">
+                    {statuses.map((st) => (
+                      <SelectItem key={st.id} value={st.id} className="text-xs font-mono">
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: st.color }} />
+                          <span>{st.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Status & Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="date_applied" className="text-[11px] font-bold">
+                  Date Applied *
+                </Label>
+                <Input
+                  id="date_applied"
+                  type="date"
+                  max={format(new Date(), "yyyy-MM-dd")}
+                  {...register("date_applied")}
+                  className={`h-8 text-xs font-mono transition-all ${
+                    errors.date_applied ? "border-destructive focus-visible:ring-destructive" : ""
+                  }`}
+                />
+                {errors.date_applied && (
+                  <p className="text-[10px] text-destructive font-bold animate-in fade-in">
+                    ↳ {errors.date_applied.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Source Channel */}
             <div className="space-y-1">
-              <Label className="text-[11px] font-bold">
-                Pipeline Stage *
-              </Label>
+              <Label className="text-[11px] font-bold">Channel</Label>
               <Select
-                value={selectedStatusId}
-                onValueChange={(val) => setValue("status_id", val)}
+                value={selectedSourceId || "none"}
+                onValueChange={(val) => setValue("source_id", val === "none" ? null : val)}
               >
                 <SelectTrigger className="h-8 text-xs font-mono">
-                  <SelectValue placeholder="Select stage" />
+                  <SelectValue placeholder="Where did you apply? (LinkedIn, Referral...)" />
                 </SelectTrigger>
                 <SelectContent className="font-mono rounded-sm border border-border bg-card">
-                  {statuses.map((st) => (
-                    <SelectItem key={st.id} value={st.id} className="text-xs font-mono">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: st.color }} />
-                        <span>{st.label}</span>
-                      </div>
+                  <SelectItem value="none" className="text-xs text-muted-foreground font-mono">None specified</SelectItem>
+                  {sources.map((src) => (
+                    <SelectItem key={src.id} value={src.id} className="text-xs font-mono">
+                      {src.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="date_applied" className="text-[11px] font-bold">
-                Date Applied *
-              </Label>
-              <Input
-                id="date_applied"
-                type="date"
-                {...register("date_applied")}
-                className="h-8 text-xs font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Source Channel */}
-          <div className="space-y-1">
-            <Label className="text-[11px] font-bold">Channel</Label>
-            <Select
-              value={selectedSourceId || "none"}
-              onValueChange={(val) => setValue("source_id", val === "none" ? null : val)}
-            >
-              <SelectTrigger className="h-8 text-xs font-mono">
-                <SelectValue placeholder="Where did you apply? (LinkedIn, Referral...)" />
-              </SelectTrigger>
-              <SelectContent className="font-mono rounded-sm border border-border bg-card">
-                <SelectItem value="none" className="text-xs text-muted-foreground font-mono">None specified</SelectItem>
-                {sources.map((src) => (
-                  <SelectItem key={src.id} value={src.id} className="text-xs font-mono">
-                    {src.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Collapsible Optional Info */}
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-[11px] text-foreground hover:underline font-bold inline-flex items-center gap-1 transition-colors"
-            >
-              {showAdvanced ? (
-                <>
-                  <ChevronUp className="h-3 w-3" />
-                  <span>Hide optional fields</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="h-3 w-3" />
-                  <span>Add URL, location, salary or notes</span>
-                </>
-              )}
-            </button>
-
-            {showAdvanced && (
-              <div className="space-y-2.5 pt-2 animate-in fade-in duration-200">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="location" className="text-[11px]">Location</Label>
-                    <Input
-                      id="location"
-                      {...register("location")}
-                      placeholder="e.g. Remote, San Francisco"
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="salary_range" className="text-[11px]">Salary / Comp</Label>
-                    <Input
-                      id="salary_range"
-                      {...register("salary_range")}
-                      placeholder="e.g. $150k - $180k"
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="job_url" className="text-[11px]">Job Posting URL</Label>
-                  <Input
-                    id="job_url"
-                    type="url"
-                    {...register("job_url")}
-                    placeholder="https://..."
-                    className="h-8 text-xs font-mono"
-                  />
-                  {errors.job_url && (
-                    <p className="text-[10px] text-destructive">{errors.job_url.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="notes" className="text-[11px]">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    {...register("notes")}
-                    placeholder="Referral contact, next steps, OA deadline..."
-                    rows={2}
-                    className="text-xs min-h-[50px] font-mono"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="pt-3 border-t border-border flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <Switch
-                id="add-another"
-                checked={addAnother}
-                onCheckedChange={setAddAnother}
-              />
-              <Label htmlFor="add-another" className="text-[11px] text-muted-foreground cursor-pointer">
-                [continuous batch logging]
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
+            {/* Collapsible Optional Info */}
+            <div className="pt-1">
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-[11px] text-foreground hover:underline font-bold inline-flex items-center gap-1 transition-colors"
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                disabled={isSubmitting}
-                className="group"
-              >
-                {isSubmitting ? (
-                  <span>Saving...</span>
+                {showAdvanced ? (
+                  <>
+                    <ChevronUp className="h-3 w-3" />
+                    <span>Hide optional fields</span>
+                  </>
                 ) : (
                   <>
-                    <span>Save Application</span>
-                    <Plus className="h-3.5 w-3.5 transition-transform duration-150 group-hover:rotate-90" />
+                    <Plus className="h-3 w-3" />
+                    <span>Add URL, location, salary or notes</span>
                   </>
                 )}
-              </Button>
+              </button>
+
+              {showAdvanced && (
+                <div className="space-y-2.5 pt-2 animate-in fade-in duration-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="location" className="text-[11px]">Location</Label>
+                      <Input
+                        id="location"
+                        {...register("location")}
+                        placeholder="e.g. Bangalore, Hyderabad, Remote"
+                        className="h-8 text-xs font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="salary_range" className="text-[11px]">Compensation / CTC</Label>
+                      <Input
+                        id="salary_range"
+                        {...register("salary_range")}
+                        placeholder="e.g. ₹24 LPA - ₹30 LPA or ₹50k/mo"
+                        className="h-8 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="job_url" className="text-[11px]">Job Posting URL</Label>
+                    <Input
+                      id="job_url"
+                      type="url"
+                      {...register("job_url")}
+                      placeholder="https://..."
+                      className="h-8 text-xs font-mono"
+                    />
+                    {errors.job_url && (
+                      <p className="text-[10px] text-destructive">{errors.job_url.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="notes" className="text-[11px]">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      {...register("notes")}
+                      placeholder="Referral contact, next steps, OA deadline..."
+                      rows={2}
+                      className="text-xs min-h-[50px] font-mono"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+
+            <DialogFooter className="pt-3 border-t border-border flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <Switch
+                  id="add-another"
+                  checked={addAnother}
+                  onCheckedChange={setAddAnother}
+                />
+                <Label htmlFor="add-another" className="text-[11px] text-muted-foreground cursor-pointer">
+                  [batch mode]
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleSaveAndOutreach}
+                  variant="secondary"
+                  size="sm"
+                  disabled={isSubmitting}
+                  className="gap-1.5 border border-border text-xs font-bold"
+                  title="Save application and immediately open recruiter message drafter"
+                >
+                  <Send className="h-3 w-3 text-emerald-400" />
+                  <span>Save & Outreach</span>
+                </Button>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSubmitting}
+                  className="group"
+                >
+                  {isSubmitting ? (
+                    <span>Saving...</span>
+                  ) : (
+                    <>
+                      <span>Save App</span>
+                      <Plus className="h-3.5 w-3.5 transition-transform duration-150 group-hover:rotate-90" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Direct Smart Outreach Dialog if triggered after logging */}
+      <SmartOutreachModal
+        application={outreachApp}
+        open={!!outreachApp}
+        onOpenChange={(isOpen) => !isOpen && setOutreachApp(null)}
+      />
+    </>
   );
 }

@@ -8,6 +8,7 @@ import { TrendChart } from "@/components/dashboard/TrendChart";
 import { StatusDonutChart } from "@/components/dashboard/StatusDonutChart";
 import { SourceBreakdown } from "@/components/dashboard/SourceBreakdown";
 import { RecentApplicationsList } from "@/components/dashboard/RecentApplicationsList";
+import { SalaryBenchmarkWidget } from "@/components/dashboard/SalaryBenchmarkWidget";
 import { Button } from "@/components/ui/button";
 import { DashboardSummary } from "@/lib/supabase/db";
 import { ApplicationStatus, DEFAULT_STATUSES } from "@/lib/constants/defaults";
@@ -130,6 +131,9 @@ export default function DashboardPage() {
         weeklyGoal={summary?.weeklyGoal || 5}
         streakDays={summary?.currentStreakDays || 0}
       />
+
+      {/* Real-time Gemini Salary & Market Compensation Benchmark Engine */}
+      <SalaryBenchmarkWidget />
 
       {/* Velocity Trend and Pipeline Distribution Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

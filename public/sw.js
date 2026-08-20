@@ -1,19 +1,14 @@
-const CACHE_NAME = "onetrack-v1.0.0";
+const CACHE_NAME = "onetrack-v1.1.0";
 const STATIC_ASSETS = [
-  "/",
-  "/dashboard",
-  "/applications",
-  "/settings",
   "/manifest.json",
   "/icons/icon.svg",
+  "/favicon.ico",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn("Service worker precache partial error:", err);
-      });
+      return cache.addAll(STATIC_ASSETS).catch(() => {});
     })
   );
   self.skipWaiting();
@@ -38,64 +33,45 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignore non-GET requests or auth/clerk requests from caching
-  if (request.method !== "GET" || url.pathname.startsWith("/api/webhooks") || url.host.includes("clerk")) {
+  // 1. Never cache non-GET, webhooks, auth providers (Clerk), or internal Next.js server actions
+  if (
+    request.method !== "GET" ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/sign-in") ||
+    url.pathname.startsWith("/sign-up") ||
+    url.pathname.startsWith("/dashboard") ||
+    url.pathname.startsWith("/applications") ||
+    url.pathname.startsWith("/settings") ||
+    url.pathname.startsWith("/admin") ||
+    url.host.includes("clerk") ||
+    url.host.includes("supabase")
+  ) {
+    // Strictly Network-Only for all sensitive dynamic data & authenticated routes
     return;
   }
 
-  // Network-First for API routes (/api/applications, /api/dashboard/summary, /api/config)
-  if (url.pathname.startsWith("/api/")) {
+  // 2. Cache-First strategy ONLY for static assets (_next/static, icons, fonts, manifest)
+  if (
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.startsWith("/icons/") ||
+    url.pathname === "/manifest.json" ||
+    url.pathname === "/favicon.ico"
+  ) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);
             });
           }
-          return response;
-        })
-        .catch(async () => {
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          return new Response(JSON.stringify({ error: "Offline mode. Cached data unavailable." }), {
-            status: 503,
-            headers: { "Content-Type": "application/json" },
-          });
-        })
+          return networkResponse;
+        });
+      })
     );
-    return;
   }
-
-  // Cache-First with Network Fallback for static assets and pages
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch in background to update cache
-        fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(request, networkResponse);
-              });
-            }
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
-
-      return fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && request.url.startsWith("http")) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
-        }
-        return networkResponse;
-      });
-    })
-  );
 });

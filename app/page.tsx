@@ -24,6 +24,12 @@ import { LandingFaq } from "@/components/landing/LandingFaq";
 import { TypewriterHeadline } from "@/components/landing/TypewriterHeadline";
 import { HolographicDottedTarget } from "@/components/landing/HolographicDottedTarget";
 import { AngledMarqueeRibbon } from "@/components/landing/AngledMarqueeRibbon";
+import { VisualCareerRoadmap } from "@/components/landing/VisualCareerRoadmap";
+import {
+  TrendingUp,
+  Award,
+  Send,
+} from "lucide-react";
 
 export default async function LandingPage() {
   const { userId } = await auth();
@@ -47,14 +53,14 @@ export default async function LandingPage() {
             </Link>
 
             <nav className="hidden md:flex items-center gap-5 text-xs text-muted-foreground">
+              <a href="#roadmap" className="hover:text-foreground transition-colors">
+                [Roadmap]
+              </a>
               <a href="#features" className="hover:text-foreground transition-colors">
                 [Features]
               </a>
               <a href="#comparison" className="hover:text-foreground transition-colors">
                 [Why OneTrack]
-              </a>
-              <a href="#how-it-works" className="hover:text-foreground transition-colors">
-                [Workflow]
               </a>
               <a href="#faqs" className="hover:text-foreground transition-colors">
                 [FAQs]
@@ -269,7 +275,10 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Feature Highlights Section */}
+        {/* Visual Career Roadmap (Interactive 4-Phase Journey) */}
+        <VisualCareerRoadmap />
+
+        {/* Feature Highlights Section (6 Core Capabilities) */}
         <section id="features" className="space-y-8 pt-6 border-t border-border">
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-2">
@@ -277,21 +286,41 @@ export default async function LandingPage() {
               <span>CORE CAPABILITIES</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Engineered for speed, clarity, and consistency.
+              Engineered for speed, intelligence, and consistency.
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-              Every feature in OneTrack is purpose-built to accelerate your application process and keep your search organized without overhead.
+              Every feature in OneTrack is purpose-built to accelerate your application process, sharpen interview responses, and benchmark your true market worth.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="border border-border p-5 bg-card rounded-sm space-y-3 hover:border-foreground/30 transition-colors">
               <div className="h-8 w-8 rounded-sm bg-primary/10 text-primary flex items-center justify-center">
                 <Clock className="h-4 w-4" />
               </div>
-              <h3 className="text-xs font-bold text-foreground">5-Second Quick-Log</h3>
+              <h3 className="text-xs font-bold text-foreground">5-Second Quick-Log + Outreach</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Log applications the instant you click submit with single-key modal triggers, smart autofocus, and custom channel tags.
+                Log applications the instant you click submit with single-key modal triggers <kbd className="text-foreground bg-secondary px-1 rounded-xs border border-border font-bold">[N]</kbd> and 1-click tailored referral emails.
+              </p>
+            </div>
+
+            <div className="border border-border p-5 bg-card rounded-sm space-y-3 hover:border-foreground/30 transition-colors">
+              <div className="h-8 w-8 rounded-sm bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+              <h3 className="text-xs font-bold text-foreground">Market Salary Intelligence</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Real-world compensation bands (Entry, Average, Strong, Top Tier) with 3-year YoY growth metrics across Indian hubs and global markets.
+              </p>
+            </div>
+
+            <div className="border border-border p-5 bg-card rounded-sm space-y-3 hover:border-foreground/30 transition-colors">
+              <div className="h-8 w-8 rounded-sm bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <Award className="h-4 w-4" />
+              </div>
+              <h3 className="text-xs font-bold text-foreground">STAR AI Interview Chamber</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Rehearse tailored technical and behavioral interview questions with real-time scoring across Situation, Task, Action, and Result.
               </p>
             </div>
 
@@ -306,7 +335,7 @@ export default async function LandingPage() {
             </div>
 
             <div className="border border-border p-5 bg-card rounded-sm space-y-3 hover:border-foreground/30 transition-colors">
-              <div className="h-8 w-8 rounded-sm bg-primary/10 text-primary flex items-center justify-center">
+              <div className="h-8 w-8 rounded-sm bg-amber-500/10 text-amber-400 flex items-center justify-center">
                 <Target className="h-4 w-4" />
               </div>
               <h3 className="text-xs font-bold text-foreground">Habit &amp; Streak Engine</h3>
@@ -316,10 +345,10 @@ export default async function LandingPage() {
             </div>
 
             <div className="border border-border p-5 bg-card rounded-sm space-y-3 hover:border-foreground/30 transition-colors">
-              <div className="h-8 w-8 rounded-sm bg-primary/10 text-primary flex items-center justify-center">
+              <div className="h-8 w-8 rounded-sm bg-blue-500/10 text-blue-400 flex items-center justify-center">
                 <Smartphone className="h-4 w-4" />
               </div>
-              <h3 className="text-xs font-bold text-foreground">Installable PWA</h3>
+              <h3 className="text-xs font-bold text-foreground">Installable PWA (Offline Ready)</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Install directly onto iOS, Android, and Desktop. Enjoy standalone app speed, background caching, and offline application viewing.
               </p>
@@ -536,6 +565,7 @@ export default async function LandingPage() {
             <span>— Precision Job Search Command Center</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
+            <a href="#roadmap" className="hover:text-foreground transition-colors">Roadmap</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#comparison" className="hover:text-foreground transition-colors">Comparison</a>
             <a href="#faqs" className="hover:text-foreground transition-colors">FAQs</a>

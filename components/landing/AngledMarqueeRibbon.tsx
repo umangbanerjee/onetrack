@@ -49,7 +49,7 @@ export function AngledMarqueeRibbon() {
                   {item.text}
                 </span>
 
-                <span className="text-foreground/40 font-mono text-xs ml-4">//</span>
+                <span className="text-foreground/40 font-mono text-xs ml-4">{"//"}</span>
               </div>
             );
           })}
