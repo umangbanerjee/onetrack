@@ -1,0 +1,19 @@
+{
+  "name": "OneTrack — Precision Job Search Command Center",
+  "short_name": "OneTrack",
+  "description": "A terminal-grade, config-driven Progressive Web App to log job applications in seconds, track interview pipelines, and visualize application velocity.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#201d1d",
+  "theme_color": "#201d1d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business", "utilities"]
+}

@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #fdfcfc;
+    --foreground: #201d1d;
+    --card: #fdfcfc;
+    --card-foreground: #201d1d;
+    --popover: #fdfcfc;
+    --popover-foreground: #201d1d;
+    --primary: #201d1d;
+    --primary-foreground: #fdfcfc;
+    --secondary: #f8f7f7;
+    --secondary-foreground: #201d1d;
+    --muted: #f1eeee;
+    --muted-foreground: #646262;
+    --accent: #f1eeee;
+    --accent-foreground: #201d1d;
+    --destructive: #ff3b30;
+    --destructive-foreground: #fdfcfc;
+    --border: rgba(15, 0, 0, 0.12);
+    --input: rgba(15, 0, 0, 0.12);
+    --hairline: rgba(15, 0, 0, 0.12);
+    --ring: #201d1d;
+    --radius: 4px;
+  }
+
+  .dark {
+    --background: #181515;
+    --foreground: #fdfcfc;
+    --card: #201d1d;
+    --card-foreground: #fdfcfc;
+    --popover: #201d1d;
+    --popover-foreground: #fdfcfc;
+    --primary: #fdfcfc;
+    --primary-foreground: #201d1d;
+    --secondary: #2a2626;
+    --secondary-foreground: #fdfcfc;
+    --muted: #2f2a2a;
+    --muted-foreground: #9a9898;
+    --accent: #2f2a2a;
+    --accent-foreground: #fdfcfc;
+    --destructive: #ff3b30;
+    --destructive-foreground: #fdfcfc;
+    --border: rgba(255, 255, 255, 0.12);
+    --input: rgba(255, 255, 255, 0.12);
+    --hairline: rgba(255, 255, 255, 0.12);
+    --ring: #fdfcfc;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    border-radius: 4px;
+  }
+  html, body {
+    @apply bg-background text-foreground antialiased font-mono;
+    font-family: var(--font-mono), "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom terminal scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong, #646262);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink, #201d1d);
+}
+
+/* Flat hairline borders per OpenCode spec */
+.hairline-border {
+  border: 1px solid var(--hairline);
+}
+.hairline-t {
+  border-top: 1px solid var(--hairline);
+}
+.hairline-b {
+  border-bottom: 1px solid var(--hairline);
+}
+.hairline-l {
+  border-left: 1px solid var(--hairline);
+}
+.hairline-r {
+  border-right: 1px solid var(--hairline);
+}
+
+/* OpenCode terminal TUI styles */
+.tui-card {
+  background-color: #201d1d;
+  color: #fdfcfc;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.tui-prompt-row {
+  background-color: #302c2c;
+  color: #fdfcfc;
+  border-radius: 4px;
+}

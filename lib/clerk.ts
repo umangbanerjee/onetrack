@@ -1,0 +1,57 @@
+import { dark } from "@clerk/themes";
+
+export const clerkAppearance = {
+  baseTheme: dark,
+  layout: {
+    socialButtonsPlacement: "top" as const,
+    logoPlacement: "none" as const,
+    showOptionalFields: true,
+  },
+  variables: {
+    colorPrimary: "#201d1d",
+    colorBackground: "#201d1d",
+    colorInputBackground: "#302c2c",
+    colorInputText: "#fdfcfc",
+    colorText: "#fdfcfc",
+    colorTextSecondary: "#9a9898",
+    colorTextOnPrimaryBackground: "#fdfcfc",
+    colorDanger: "#ff3b30",
+    colorSuccess: "#30d158",
+    colorWarning: "#ff9f0a",
+    colorNeutral: "#fdfcfc",
+    borderRadius: "4px",
+    fontSize: "0.875rem",
+    fontFamily: "var(--font-mono), JetBrains Mono, IBM Plex Mono, monospace",
+  },
+  elements: {
+    rootBox: "mx-auto w-full max-w-md font-mono",
+    card: "bg-[#201d1d] border border-white/15 shadow-none rounded-[4px] p-6 sm:p-8 text-[#fdfcfc] font-mono",
+    headerTitle: "text-[#fdfcfc] font-bold text-lg tracking-tight font-mono",
+    headerSubtitle: "text-[#9a9898] text-xs mt-1 font-mono",
+    socialButtonsBlockButton:
+      "bg-[#302c2c] border border-white/15 text-[#fdfcfc] hover:bg-[#424245] transition-all rounded-[4px] h-9 font-medium text-xs font-mono",
+    socialButtonsBlockButtonText: "text-[#fdfcfc] font-medium text-xs font-mono",
+    socialButtonsProviderIcon: "h-4 w-4",
+    dividerRow: "my-4",
+    dividerLine: "bg-white/15",
+    dividerText: "text-[#9a9898] text-xs uppercase font-mono font-medium",
+    formFieldLabel: "text-[#fdfcfc] font-medium text-xs mb-1 font-mono",
+    formFieldInput:
+      "bg-[#161414] border border-white/20 text-[#fdfcfc] placeholder:text-[#646262] rounded-[4px] h-9 px-3 text-xs focus:border-[#fdfcfc] focus:ring-0 transition-all font-mono",
+    formFieldAction: "text-[#fdfcfc] hover:underline text-xs font-mono",
+    formButtonPrimary:
+      "bg-[#fdfcfc] text-[#201d1d] hover:bg-[#f1eeee] font-bold rounded-[4px] h-9 transition-all text-xs font-mono uppercase tracking-wider",
+    footer: "bg-transparent border-t border-white/10 pt-4 mt-4 text-[#9a9898] font-mono",
+    footerAction: "text-[#9a9898] text-xs font-mono",
+    footerActionText: "text-[#9a9898] text-xs font-mono",
+    footerActionLink: "text-[#fdfcfc] hover:underline font-bold ml-1 text-xs font-mono",
+    footerPages: "hidden",
+    identityPreview: "bg-[#302c2c] border border-white/15 rounded-[4px] p-3 text-[#fdfcfc] font-mono",
+    identityPreviewText: "text-[#fdfcfc] text-xs font-mono",
+    identityPreviewEditButton: "text-[#fdfcfc] hover:underline text-xs font-mono",
+    formHeaderTitle: "text-[#fdfcfc] font-bold text-base font-mono",
+    formHeaderSubtitle: "text-[#9a9898] text-xs font-mono",
+    otpCodeFieldInput: "bg-[#161414] border border-white/20 text-[#fdfcfc] rounded-[4px] text-base font-mono",
+    formResendCodeLink: "text-[#fdfcfc] hover:underline text-xs font-mono",
+  },
+};
