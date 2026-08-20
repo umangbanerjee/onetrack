@@ -6,6 +6,15 @@ import { z } from "zod";
  * ============================================================================
  */
 
+// Helper to get local YYYY-MM-DD
+const getLocalTodayDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 // 1. Application Creation Schema
 export const applicationSchema = z.object({
   company_name: z
@@ -22,7 +31,15 @@ export const applicationSchema = z.object({
   source_id: z.string().optional().nullable(),
   date_applied: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+    .refine(
+      (val) => {
+        // Enforce date cannot be in the future (compared to local today)
+        const todayStr = getLocalTodayDate();
+        return val <= todayStr;
+      },
+      { message: "Date applied cannot be in the future" }
+    ),
   job_url: z
     .string()
     .trim()

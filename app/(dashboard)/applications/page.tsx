@@ -6,6 +6,7 @@ import { FilterBar } from "@/components/applications/FilterBar";
 import { ApplicationTable } from "@/components/applications/ApplicationTable";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
 import { DeleteConfirmDialog } from "@/components/applications/DeleteConfirmDialog";
+import { SmartOutreachModal } from "@/components/applications/SmartOutreachModal";
 import { DatePreset } from "@/components/applications/DateRangeSelector";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
@@ -29,9 +30,10 @@ export default function ApplicationsPage() {
   const [sortBy, setSortBy] = useState<"date_applied" | "company_name" | "updated_at">("date_applied");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  // Delete State
+  // Dialogs State
   const [appToDelete, setAppToDelete] = useState<ApplicationItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedOutreachApp, setSelectedOutreachApp] = useState<ApplicationItem | null>(null);
 
   const fetchApplications = useCallback(async () => {
     try {
@@ -261,6 +263,7 @@ export default function ApplicationsPage() {
               onSortChange={handleSortChange}
               onStatusChange={handleInlineStatusChange}
               onDeleteClick={setAppToDelete}
+              onOutreachClick={setSelectedOutreachApp}
             />
           </div>
 
@@ -273,11 +276,19 @@ export default function ApplicationsPage() {
                 statuses={statuses}
                 onStatusChange={handleInlineStatusChange}
                 onDeleteClick={setAppToDelete}
+                onOutreachClick={setSelectedOutreachApp}
               />
             ))}
           </div>
         </>
       )}
+
+      {/* Smart Outreach & Follow-Up Modal */}
+      <SmartOutreachModal
+        application={selectedOutreachApp}
+        open={!!selectedOutreachApp}
+        onOpenChange={(open) => !open && setSelectedOutreachApp(null)}
+      />
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmDialog

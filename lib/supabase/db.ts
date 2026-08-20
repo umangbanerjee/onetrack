@@ -16,6 +16,7 @@ import {
   parseISO,
   subDays,
   format,
+  isValid,
 } from "date-fns";
 import fs from "fs";
 import path from "path";
@@ -610,6 +611,18 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
   const statuses = await getApplicationStatuses();
   const sources = await getApplicationSources();
 
+  const extractDateOnly = (dateStr: string | Date | undefined): string => {
+    if (!dateStr) return "";
+    if (typeof dateStr === "string") {
+      return dateStr.split("T")[0].trim();
+    }
+    try {
+      return format(dateStr, "yyyy-MM-dd");
+    } catch {
+      return "";
+    }
+  };
+
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
@@ -618,7 +631,8 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
 
   const appliedThisWeek = items.filter((a) => {
     try {
-      const d = parseISO(a.date_applied);
+      const raw = extractDateOnly(a.date_applied);
+      const d = parseISO(raw);
       return isWithinInterval(d, { start: weekStart, end: weekEnd });
     } catch {
       return false;
@@ -627,7 +641,8 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
 
   const appliedThisMonth = items.filter((a) => {
     try {
-      const d = parseISO(a.date_applied);
+      const raw = extractDateOnly(a.date_applied);
+      const d = parseISO(raw);
       return isWithinInterval(d, { start: monthStart, end: monthEnd });
     } catch {
       return false;
@@ -646,13 +661,41 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
   const positiveResponses = items.filter((a) => nonAppliedOrResponseStatuses.has(a.status_id)).length;
   const responseRatePercent = items.length > 0 ? Math.round((positiveResponses / items.length) * 100) : 0;
 
-  // Streak Calculation
-  const uniqueDates = Array.from(new Set(items.map((a) => a.date_applied))).sort().reverse();
+  // Find latest reference date (either now or newest application date, handling ahead-of-UTC timezones)
+  let latestDate = now;
+  items.forEach((item) => {
+    const raw = extractDateOnly(item.date_applied);
+    if (raw) {
+      try {
+        const appDate = parseISO(raw);
+        if (isValid(appDate) && appDate > latestDate) {
+          latestDate = appDate;
+        }
+      } catch {}
+    }
+  });
+
+  // Streak Calculation (Timezone-Resilient)
+  const uniqueDates = Array.from(
+    new Set(
+      items
+        .map((a) => extractDateOnly(a.date_applied))
+        .filter(Boolean)
+    )
+  )
+    .sort()
+    .reverse();
+
   let streak = 0;
   if (uniqueDates.length > 0) {
-    const todayStr = format(now, "yyyy-MM-dd");
-    const yesterdayStr = format(subDays(now, 1), "yyyy-MM-dd");
-    let checkDate = uniqueDates[0] === todayStr ? now : uniqueDates[0] === yesterdayStr ? subDays(now, 1) : null;
+    const todayStr = format(latestDate, "yyyy-MM-dd");
+    const yesterdayStr = format(subDays(latestDate, 1), "yyyy-MM-dd");
+    let checkDate =
+      uniqueDates[0] === todayStr
+        ? latestDate
+        : uniqueDates[0] === yesterdayStr
+        ? subDays(latestDate, 1)
+        : null;
 
     if (checkDate) {
       streak = 1;
@@ -671,9 +714,13 @@ export async function getDashboardSummary(userId: string): Promise<DashboardSumm
   // 14-day velocity trend
   const trendData = [];
   for (let i = 13; i >= 0; i--) {
-    const d = subDays(now, i);
+    const d = subDays(latestDate, i);
     const dStr = format(d, "yyyy-MM-dd");
-    const count = items.filter((a) => a.date_applied === dStr).length;
+    const count = items.filter((a) => {
+      const appDateStr = extractDateOnly(a.date_applied);
+      return appDateStr === dStr;
+    }).length;
+
     trendData.push({
       date: dStr,
       count,

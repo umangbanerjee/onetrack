@@ -7,12 +7,7 @@ export function PwaRegister() {
     if (typeof window !== "undefined" && "serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       navigator.serviceWorker
         .register("/sw.js")
-        .then((registration) => {
-          console.log("OneTrack ServiceWorker registered with scope:", registration.scope);
-        })
-        .catch((error) => {
-          console.warn("OneTrack ServiceWorker registration failed:", error);
-        });
+        .catch(() => {});
     }
   }, []);
 

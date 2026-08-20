@@ -3,13 +3,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Target, CalendarDays, CheckCircle2 } from "lucide-react";
+import { Flame, Target, CalendarDays, CheckCircle2, Award } from "lucide-react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 
 interface StreakWidgetProps {
   currentStreak: number;
   thisWeekCount: number;
   weeklyGoal: number;
+  totalApplications?: number;
   recentActivityDates?: string[];
 }
 
@@ -17,11 +18,22 @@ export function StreakWidget({
   currentStreak,
   thisWeekCount,
   weeklyGoal,
+  totalApplications = 0,
   recentActivityDates = [],
 }: StreakWidgetProps) {
   const goalProgress = Math.min(Math.round((thisWeekCount / Math.max(weeklyGoal, 1)) * 100), 100);
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+
+  // Gamification Tier / Level Calculation
+  const getHunterTier = (total: number) => {
+    if (total >= 30) return { level: 4, name: "SEARCH ACE", badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
+    if (total >= 15) return { level: 3, name: "PIPELINE CLOSER", badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/30" };
+    if (total >= 5) return { level: 2, name: "HUNTER", badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+    return { level: 1, name: "APPRENTICE", badgeColor: "bg-secondary/40 text-foreground border-border" };
+  };
+
+  const currentTier = getHunterTier(totalApplications);
 
   // Generate 7 days of the active week (Mon - Sun)
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -45,40 +57,33 @@ export function StreakWidget({
     <Card className="border border-border bg-card rounded-sm shadow-none font-mono">
       <CardContent className="p-4 sm:p-5">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-          {/* Left Column: Streak Momentum */}
-          <div className="md:col-span-4 space-y-1.5 border-b md:border-b-0 md:border-r border-border/60 pb-4 md:pb-0 md:pr-4">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-sm bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Zap className="h-3.5 w-3.5 fill-primary/30" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-foreground uppercase tracking-wider">
-                    {currentStreak > 0 ? `${currentStreak}-DAY STREAK` : "0 DAYS STREAK"}
-                  </span>
-                  {currentStreak >= 3 ? (
-                    <Badge variant="warning" className="text-[9px] py-0 px-1 font-mono">
-                      MOMENTUM
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono text-muted-foreground bg-secondary/30">
-                      DAILY GOAL
-                    </Badge>
-                  )}
+          {/* Left Column: Streak & Level Rank */}
+          <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-border/60 pb-4 md:pb-0 md:pr-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <div className="h-7 w-7 rounded-sm bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Flame className={`h-4 w-4 ${currentStreak > 0 ? "text-amber-400 fill-amber-400/40 animate-pulse" : "text-muted-foreground"}`} />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
-                  {currentStreak > 0
-                    ? "Active submission streak maintained."
-                    : "Log 1 application today to ignite momentum."}
-                </p>
+                <span className="font-bold text-xs text-foreground uppercase tracking-wider">
+                  {currentStreak > 0 ? `${currentStreak}-DAY STREAK` : "0 DAYS STREAK"}
+                </span>
               </div>
+              <Badge variant="outline" className={`text-[10px] py-0.5 px-2 font-mono flex items-center gap-1 border ${currentTier.badgeColor}`}>
+                <Award className="h-3 w-3" />
+                <span>LVL {currentTier.level}: {currentTier.name}</span>
+              </Badge>
             </div>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              {currentStreak > 0
+                ? "Active momentum ignition. Daily habit maintained."
+                : "Submit 1 application today to ignite daily momentum."}
+            </p>
           </div>
 
           {/* Middle Column: 7-Day Habit Matrix */}
           <div className="md:col-span-4 space-y-1.5 border-b md:border-b-0 md:border-r border-border/60 pb-4 md:pb-0 md:px-2">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground uppercase">
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 font-bold">
                 <CalendarDays className="h-3 w-3" />
                 <span>THIS WEEK&apos;S HABIT</span>
               </span>
@@ -92,11 +97,11 @@ export function StreakWidget({
                 return (
                   <div
                     key={day.dateStr}
-                    className={`flex flex-col items-center justify-center py-1 rounded-sm border text-[10px] transition-colors ${
+                    className={`flex flex-col items-center justify-center py-1 rounded-sm border text-[10px] transition-all ${
                       day.hasActivity
-                        ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                        ? "bg-foreground text-background border-foreground font-bold shadow-xs scale-[1.02]"
                         : day.isToday
-                        ? "border-primary/50 bg-secondary/50 font-bold text-foreground"
+                        ? "border-primary/60 bg-secondary/50 font-bold text-foreground"
                         : "border-border/40 bg-secondary/20 text-muted-foreground"
                     }`}
                     title={`${day.dayLabel} (${day.dateStr}): ${day.hasActivity ? "Application Logged" : "No submission"}`}
@@ -104,7 +109,7 @@ export function StreakWidget({
                     <span className="text-[9px] uppercase leading-none opacity-80">
                       {day.dayLabel.charAt(0)}
                     </span>
-                    <span className="text-[10px] leading-tight mt-0.5">
+                    <span className="text-[10px] leading-tight mt-0.5 font-mono">
                       {day.dayNumber}
                     </span>
                   </div>
@@ -138,9 +143,9 @@ export function StreakWidget({
                   : "Weekly velocity achieved!"}
               </span>
               {goalProgress >= 100 && (
-                <span className="text-success font-bold flex items-center gap-0.5">
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  [COMPLETED]
+                <span className="text-emerald-400 font-bold flex items-center gap-0.5">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>[GOAL MET]</span>
                 </span>
               )}
             </div>
