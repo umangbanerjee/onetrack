@@ -41,7 +41,7 @@ export function TrendChart({ data }: TrendChartProps) {
             [+] APPLICATION VELOCITY (14-DAY)
           </CardTitle>
           <CardDescription className="text-[11px] text-muted-foreground mt-0.5">
-            {totalSum === 0 ? "No activity logged in 14-day window" : "Daily submissions timeline"}
+            {totalSum === 0 ? "No activity logged in 14-day window" : `${totalSum} total submissions tracked in window`}
           </CardDescription>
         </div>
         <div className="flex items-center gap-1">
@@ -67,6 +67,12 @@ export function TrendChart({ data }: TrendChartProps) {
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+              <defs>
+                <linearGradient id="velocityGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--foreground)" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="var(--border)" />
               <XAxis
                 dataKey="label"
@@ -83,14 +89,15 @@ export function TrendChart({ data }: TrendChartProps) {
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
+                domain={[0, (dataMax: number) => Math.max(dataMax + 1, 3)]}
               />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="border border-border bg-background p-2 rounded-sm text-xs font-mono">
-                        <p className="text-muted-foreground">{d.label}</p>
+                      <div className="border border-border bg-background p-2 rounded-sm text-xs font-mono shadow-md">
+                        <p className="text-muted-foreground">{d.label} ({d.date})</p>
                         <p className="font-bold text-foreground mt-0.5">
                           {d.displayCount} {viewMode === "daily" ? "apps logged" : "total apps"}
                         </p>
@@ -104,9 +111,30 @@ export function TrendChart({ data }: TrendChartProps) {
                 type="monotone"
                 dataKey="displayCount"
                 stroke="var(--foreground)"
-                strokeWidth={1.5}
-                fill="var(--secondary)"
-                fillOpacity={0.5}
+                strokeWidth={2}
+                fill="url(#velocityGradient)"
+                dot={({ cx, cy, payload }) => {
+                  if (payload.displayCount > 0) {
+                    return (
+                      <circle
+                        key={payload.date}
+                        cx={cx}
+                        cy={cy}
+                        r={3.5}
+                        fill="var(--foreground)"
+                        stroke="var(--background)"
+                        strokeWidth={1.5}
+                      />
+                    );
+                  }
+                  return null;
+                }}
+                activeDot={{
+                  r: 5,
+                  fill: "var(--foreground)",
+                  stroke: "var(--background)",
+                  strokeWidth: 2,
+                }}
               />
             </AreaChart>
           </ResponsiveContainer>

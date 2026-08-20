@@ -21,6 +21,9 @@ import {
   Search,
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/LandingFaq";
+import { TypewriterHeadline } from "@/components/landing/TypewriterHeadline";
+import { HolographicDottedTarget } from "@/components/landing/HolographicDottedTarget";
+import { AngledMarqueeRibbon } from "@/components/landing/AngledMarqueeRibbon";
 
 export default async function LandingPage() {
   const { userId } = await auth();
@@ -76,56 +79,64 @@ export default async function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 space-y-24 w-full">
-        {/* Hero Section */}
-        <section className="space-y-6 text-left max-w-4xl pt-4">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm bg-secondary/80 text-foreground text-xs border border-border">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-            <span className="font-bold text-foreground">[PRECISION COMMAND CENTER]</span>
-            <span className="text-muted-foreground hidden sm:inline">• Built for high-velocity job searches</span>
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-16 space-y-10 sm:space-y-14 w-full">
+        {/* Hero Section with 2-Column Responsive Layout */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center pt-1">
+          {/* Left Column: Headline, Typewriter, Subtext, CTAs */}
+          <div className="lg:col-span-7 space-y-3.5 sm:space-y-4 text-left">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-sm bg-secondary/80 text-foreground text-[11px] border border-border">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+              <span className="font-bold text-foreground">[PRECISION COMMAND CENTER]</span>
+              <span className="text-muted-foreground hidden sm:inline">• Built for high-velocity searches</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl md:text-[40px] font-bold tracking-tight leading-[1.18] text-foreground">
+              The high-velocity job search tracker for{" "}
+              <TypewriterHeadline />
+            </h1>
+
+            <p className="text-xs sm:text-[13px] text-foreground/80 max-w-xl leading-relaxed font-medium">
+              Stop losing high-value opportunities in bloated spreadsheets and slow notes. Log applications in under 5 seconds, track interview pipelines, and visualize hiring velocity with zero distraction.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <Link href="/sign-up">
+                <Button size="sm" variant="primary" className="h-9 px-4 group shadow-md hover:shadow-lg gap-2 text-xs font-bold">
+                  <span>Launch Workspace Free</span>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-1" />
+                </Button>
+              </Link>
+              <Link href="/sign-in">
+                <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-medium">
+                  <span>Sign In to Existing Account</span>
+                </Button>
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-y-1.5 gap-x-5 text-[11px] text-foreground/80 pt-0.5 font-medium">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <span className="text-foreground">100% Free to Use</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <span className="text-foreground">5-Second Fast Logging</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <span className="text-foreground">Installable PWA (Offline Ready)</span>
+              </span>
+            </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15] text-foreground">
-            The high-velocity job search tracker for engineers &amp; builders.
-          </h1>
-
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed">
-            Stop losing opportunities in bloated spreadsheets and slow note documents. Log applications in under 5 seconds, track interview stages, and visualize hiring velocity with zero distraction.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link href="/sign-up">
-              <Button size="lg" variant="primary" className="group shadow-md hover:shadow-lg gap-2 text-xs sm:text-sm">
-                <span>Launch Workspace Free</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1" />
-              </Button>
-            </Link>
-            <Link href="/sign-in">
-              <Button size="lg" variant="outline" className="text-xs sm:text-sm">
-                <span>Sign In to Existing Account</span>
-              </Button>
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-[11px] text-muted-foreground pt-1">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>100% Free to Use</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>5-Second Fast Logging</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Installable PWA (Offline Ready)</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>No Credit Card Required</span>
-            </span>
+          {/* Right Column: 3D Holographic Achiever Target Visual */}
+          <div className="lg:col-span-5 w-full">
+            <HolographicDottedTarget />
           </div>
         </section>
+
+        {/* Angled Kinetic Marquee Ribbon */}
+        <AngledMarqueeRibbon />
 
         {/* Live Command Center Preview Mockup */}
         <section className="border border-border bg-card rounded-sm shadow-xl p-4 sm:p-6 space-y-5">
