@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ExternalLink, MoreHorizontal, Edit3, Trash2, ChevronDown } from "lucide-react";
+import { ExternalLink, MoreHorizontal, Edit3, Trash2, ChevronDown, Send } from "lucide-react";
 import { formatDate, formatRelativeDate } from "@/lib/utils";
 
 interface ApplicationCardProps {
@@ -20,6 +20,7 @@ interface ApplicationCardProps {
   statuses: ApplicationStatus[];
   onStatusChange: (appId: string, newStatusId: string) => void;
   onDeleteClick: (app: ApplicationItem) => void;
+  onOutreachClick?: (app: ApplicationItem) => void;
 }
 
 export function ApplicationCard({
@@ -27,6 +28,7 @@ export function ApplicationCard({
   statuses,
   onStatusChange,
   onDeleteClick,
+  onOutreachClick,
 }: ApplicationCardProps) {
   const statusObj = app.status || statuses.find((s) => s.id === app.status_id) || statuses[0];
 
@@ -45,37 +47,61 @@ export function ApplicationCard({
             <p className="text-[11px] text-muted-foreground">{app.role_title}</p>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36 font-mono rounded-sm border border-border bg-card shadow-lg">
-              <DropdownMenuItem asChild className="text-xs font-mono cursor-pointer">
-                <Link href={`/applications/${app.id}`} className="flex items-center gap-2">
-                  <Edit3 className="h-3 w-3" />
-                  <span>Edit Details</span>
-                </Link>
-              </DropdownMenuItem>
-              {app.job_url && (
-                <DropdownMenuItem asChild className="text-xs font-mono cursor-pointer">
-                  <a href={app.job_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                    <ExternalLink className="h-3 w-3" />
-                    <span>Job Link</span>
-                  </a>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => onDeleteClick(app)}
-                className="text-xs font-mono text-destructive cursor-pointer flex items-center gap-2"
+          <div className="flex items-center gap-1">
+            {onOutreachClick && (
+              <Button
+                onClick={() => onOutreachClick(app)}
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-[10px] font-mono text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                title="Draft message"
               >
-                <Trash2 className="h-3 w-3" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <Send className="h-3 w-3 text-emerald-400" />
+                <span>Outreach</span>
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40 font-mono rounded-sm border border-border bg-card shadow-lg">
+                <DropdownMenuItem asChild className="text-xs font-mono cursor-pointer">
+                  <Link href={`/applications/${app.id}`} className="flex items-center gap-2">
+                    <Edit3 className="h-3 w-3" />
+                    <span>Edit & Prep</span>
+                  </Link>
+                </DropdownMenuItem>
+                {onOutreachClick && (
+                  <DropdownMenuItem
+                    onClick={() => onOutreachClick(app)}
+                    className="text-xs font-mono cursor-pointer flex items-center gap-2"
+                  >
+                    <Send className="h-3 w-3 text-emerald-400" />
+                    <span>Draft Outreach</span>
+                  </DropdownMenuItem>
+                )}
+                {app.job_url && (
+                  <DropdownMenuItem asChild className="text-xs font-mono cursor-pointer">
+                    <a href={app.job_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                      <ExternalLink className="h-3 w-3" />
+                      <span>Job Link</span>
+                    </a>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDeleteClick(app)}
+                  className="text-xs font-mono text-destructive cursor-pointer flex items-center gap-2"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Metadata */}
