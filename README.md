@@ -1,13 +1,13 @@
 # OneTrack
 
-OneTrack is a terminal-style job application tracker built with Next.js 14, Clerk, Supabase, and Tailwind CSS. It helps you log applications quickly, track interview pipelines, and monitor job-search performance from a focused dashboard.
+OneTrack is a terminal-style job application tracker built with Next.js 14, Clerk, Supabase, and Tailwind CSS. It helps you log applications quickly, track interview pipelines, and monitor job-search performance from a focused dashboard, with AI-powered salary comparison and personalized cold outreach/LinkedIn reachout support.
 
 ## Features
 
 - Fast job application logging and inline updates
 - Config-driven application statuses and source channels
 - Dashboard metrics (volume, trends, conversion, and breakdowns)
-- Interview prep and smart outreach tooling
+- AI interview prep, salary comparison, and personalized outreach tooling
 - Admin console for users, statuses, sources, and platform stats
 - PWA support (installable app + offline behavior)
 - CSV export and productivity-oriented workflow
